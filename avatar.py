@@ -79,8 +79,8 @@ def serve_img(nickname, size):
     img = get_avatar(nickname, size)
     return img
 
-if __name__ == "__main__":
-    try:
-        app.run(host='0.0.0.0', port=81, debug=True)
-    except KeyboardInterrupt:
-        system.exit(0)
+# if __name__ == "__main__":
+#     try:
+#         app.run(host='0.0.0.0', port=81, debug=True)
+#     except KeyboardInterrupt:
+#         system.exit(0)
