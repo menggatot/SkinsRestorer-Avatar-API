@@ -1,4 +1,4 @@
-#!/usr/bin/awk BEGIN{a=ARGV[1];sub(/[a-z_.]+$/,"avatar-env/bin/python3.8",a);system(a"\t"ARGV[1])}
+#!/usr/bin/env python3
 import io
 from os import system
 from flask import app
