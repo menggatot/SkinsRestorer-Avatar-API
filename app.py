@@ -76,6 +76,8 @@ def get_avatar(insert_nickname, avatar_size):
 
 @app.route('/<int:size>/<nickname>.png')
 def serve_img(nickname, size):
+    if size >= 512:
+        size = 512
     img = get_avatar(nickname, size)
     return img
 
