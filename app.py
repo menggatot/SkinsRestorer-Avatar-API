@@ -87,7 +87,10 @@ class url:
             FROM premium \
             WHERE premium.Name LIKE %s \
         "
-        return self.mysql_query(sql)[0]
+        if self.mysql_query(sql) is None:
+            return
+        else:
+            return self.mysql_query(sql)[0]
 
     def mojang_head(self):
         return self.skins_json_object()['textures']['SKIN']['url']
