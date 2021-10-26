@@ -23,13 +23,15 @@ with open('config.yml') as f:
     database=config['database']
     )
 
+
 def get_cooking(image_url, image_size):
     scraper = cloudscraper.create_scraper()
     scraper_out = scraper.get(image_url, stream=True)
+    print(image_url)
     if scraper_out.status_code == 404:
-        scraper_out = scraper.get("http://textures.minecraft.net/texture/b67168621fdb0cf3f7e57cb5166d48e9e9c87d677494339f3b8feec8c3a36b", stream=True)
+        return
     with Image.open(scraper_out.raw) as im:
-        background = im.crop((8, 8, 16, 16)).convert("RGBA") 
+        background = im.crop((8, 8, 16, 16)).convert("RGBA")
         foreground = im.crop((40, 8, 48, 16)).convert("RGBA")
         head = Image.alpha_composite(background, foreground)
         result = head.resize((image_size, image_size), resample=0)
@@ -93,23 +95,43 @@ class url:
             return self.mysql_query(sql)[0]
 
     def mojang_head(self):
-        return self.skins_json_object()['textures']['SKIN']['url']
+        scraper = cloudscraper.create_scraper()
+        uuid_get = scraper.get(
+            f'https://api.mojang.com/users/profiles/minecraft/{self.nick}', stream=True)
+        if uuid_get.status_code == 404 or uuid_get.status_code == 204:
+            print('can\'t find the skin, so we use steve\'s skin')
+            return 'http://textures.minecraft.net/texture/1a4af718455d4aab528e7a61f86fa25e6a369d1768dcb13f7df319a713eb810b'
+        uuid = uuid_get.json()['id']
+        values = scraper.get(
+            f'https://sessionserver.mojang.com/session/minecraft/profile/{uuid}', stream=True).json()['properties'][0]['value']
+        json_data = base64.urlsafe_b64decode(values)
+        json_object = json.loads(json_data)
+        return json_object['textures']['SKIN']['url']
 
     def tl_head(self):
         url = "https://tlauncher.org/upload/all/nickname/tlauncher_{0}.png".format(self.nick)
         return url
-
 
 def get_avatar(insert_nickname, avatar_size):
     nickname = url(insert_nickname)  # Name Input
     is_premium =  True if nickname.premium_uuid() is not None else False
 
     if nickname.db_head() is None:
+        print(f'{insert_nickname} didn\'t have custom skin')
         if is_premium is True:
+            print(f'{insert_nickname} is premium user')
             return get_cooking(nickname.mojang_head(), avatar_size)
         else:
-            return get_cooking(nickname.tl_head(), avatar_size)
+            print(f'{insert_nickname} is not premium user')
+            if get_cooking(nickname.tl_head(), avatar_size) is None:
+                print(
+                    f'can\'t find {insert_nickname} in TL so now we use Mojang')
+                return get_cooking(nickname.mojang_head(), avatar_size)
+            else:
+                print(f'found {insert_nickname} in TL')
+                return get_cooking(nickname.tl_head(), avatar_size)
     else:
+        print(f'{insert_nickname} has custom skin')
         return get_cooking(nickname.db_head(), avatar_size)
 
 
