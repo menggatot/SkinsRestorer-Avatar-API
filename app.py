@@ -43,36 +43,72 @@ class url:
     def __init__(self, nick):
         self.nick = nick
 
-    def db_head(self):
+    def mysql_query(self, sql):
         cursor = mydb.cursor()
         q = "%s%%" % self.nick
-        # sql = "\
-        #     SELECT Skins.Value \
-        #     FROM Players \
-        #     RIGHT JOIN Skins ON Players.Skin = Skins.Nick \
-        #     WHERE Players.nick LIKE %s \
-        # "
+        cursor.execute(sql, [q, ])
+        for myresult in cursor:
+            return myresult
+
+    def mysql_json(self, sql):
+        cursor = mydb.cursor()
+        q = "%s%%" % self.nick
+        cursor.execute(sql, [q, ])
+        for myresult in cursor:
+            json_data = base64.urlsafe_b64decode(myresult[0])
+            json_object = json.loads(json_data)
+            return json_object
+
+
+    def db_head(self):
+        sql = "\
+            SELECT Skins.Value \
+            FROM Players \
+            RIGHT JOIN Skins ON Players.Skin = Skins.Nick \
+            WHERE Players.nick \
+            LIKE %s \
+        "
+        if self.mysql_json(sql) is None:
+            return
+        else:
+            return self.mysql_json(sql)['textures']['SKIN']['url']
+
+    def skins_json_object(self):
         sql = "\
             SELECT Skins.Value \
             FROM Skins \
             WHERE Skins.nick LIKE %s \
         "
-        cursor.execute(sql, [q,])
-        for myresult in cursor:
-            json_data = base64.urlsafe_b64decode(myresult[0])
-            json_object = json.loads(json_data)
-            return json_object['textures']['SKIN']['url']
+        return self.mysql_json(sql)
+
+    def premium_uuid(self):
+        sql = "\
+            SELECT premium.UUID \
+            FROM premium \
+            WHERE premium.Name LIKE %s \
+        "
+        return self.mysql_query(sql)[0]
+
+    def mojang_head(self):
+        return self.skins_json_object()['textures']['SKIN']['url']
 
     def tl_head(self):
         url = "https://tlauncher.org/upload/all/nickname/tlauncher_{0}.png".format(self.nick)
         return url
 
+
 def get_avatar(insert_nickname, avatar_size):
     nickname = url(insert_nickname)  # Name Input
+    is_premium =  True if nickname.premium_uuid() is not None else False
+
     if nickname.db_head() is None:
-        return get_cooking(nickname.tl_head(), avatar_size)
+        if is_premium is True:
+            return get_cooking(nickname.mojang_head(), avatar_size)
+        else:
+            return get_cooking(nickname.tl_head(), avatar_size)
     else:
         return get_cooking(nickname.db_head(), avatar_size)
+
 
 @app.route('/<int:size>/<nickname>.png')
 def serve_img(nickname, size):
