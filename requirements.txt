@@ -8,7 +8,9 @@ idna==3.3
 itsdangerous==2.0.1
 Jinja2==3.0.2
 MarkupSafe==2.0.1
-mysql-connector-python==8.0.27
+mysqlclient==2.0.3
+nimporter==1.0.4
+orjson==3.6.4
 Pillow==8.4.0
 protobuf==3.19.0
 pyparsing==3.0.0

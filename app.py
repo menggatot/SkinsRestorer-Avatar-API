@@ -3,9 +3,9 @@ import io
 from os import system
 from flask import app
 from flask.helpers import send_file
-import mysql.connector
+import MySQLdb
 import base64
-import json
+import orjson as json
 from PIL import Image
 import yaml
 import cloudscraper
@@ -15,20 +15,21 @@ app = Flask(__name__)
 
 with open('config.yml') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
-    mydb = mysql.connector.connect(
+    conn = MySQLdb.connect(
     host=config['host'],
-    port=config['port'],
+    port=int(config['port']),
     user=config['user'],
-    password=config['password'],
-    database=config['database']
+    passwd=config['password'],
+    db=config['database'], 
+    charset="utf8"
     )
-
+conn.autocommit(True)
 
 def get_cooking(image_url, image_size):
     scraper = cloudscraper.create_scraper()
     scraper_out = scraper.get(image_url, stream=True)
-    print(image_url)
-    if scraper_out.status_code == 404:
+    print(image_url, scraper_out.status_code)
+    if scraper_out.status_code == 404 or scraper_out.status_code == 403:
         return
     with Image.open(scraper_out.raw) as im:
         background = im.crop((8, 8, 16, 16)).convert("RGBA")
@@ -41,22 +42,24 @@ def get_cooking(image_url, image_size):
         return send_file(result_byte, mimetype='image/png')
 
 
-class url:
+class GetUrl:
     def __init__(self, nick):
         self.nick = nick
 
     def mysql_query(self, sql):
-        cursor = mydb.cursor()
+        cursor = conn.cursor()
         q = "%s%%" % self.nick
         cursor.execute(sql, [q, ])
-        for myresult in cursor:
+        row = cursor.fetchall()
+        for myresult in row:
             return myresult
 
     def mysql_json(self, sql):
-        cursor = mydb.cursor()
+        cursor = conn.cursor()
         q = "%s%%" % self.nick
         cursor.execute(sql, [q, ])
-        for myresult in cursor:
+        row = cursor.fetchall()
+        for myresult in row:
             json_data = base64.urlsafe_b64decode(myresult[0])
             json_object = json.loads(json_data)
             return json_object
@@ -67,11 +70,10 @@ class url:
             SELECT Skins.Value \
             FROM Players \
             RIGHT JOIN Skins ON Players.Skin = Skins.Nick \
-            WHERE Players.nick \
-            LIKE %s \
+            WHERE Players.nick LIKE %s \
         "
         if self.mysql_json(sql) is None:
-            return
+            return 
         else:
             return self.mysql_json(sql)['textures']['SKIN']['url']
 
@@ -113,10 +115,11 @@ class url:
         return url
 
 def get_avatar(insert_nickname, avatar_size):
-    nickname = url(insert_nickname)  # Name Input
+    nickname = GetUrl(insert_nickname)  # Name Input
     is_premium =  True if nickname.premium_uuid() is not None else False
 
     if nickname.db_head() is None:
+        print(nickname.db_head())
         print(f'{insert_nickname} didn\'t have custom skin')
         if is_premium is True:
             print(f'{insert_nickname} is premium user')
@@ -139,7 +142,8 @@ def get_avatar(insert_nickname, avatar_size):
 def serve_img(nickname, size):
     if size >= 512:
         size = 512
-    img = get_avatar(nickname, size)
+    nick_clean = str(nickname).lstrip(r"""!"#$%&'()*+,./:;<=>?@[\]^`{|}~""")
+    img = get_avatar(nick_clean, size)
     return img
 
 # if __name__ == "__main__":
