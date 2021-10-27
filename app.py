@@ -77,14 +77,6 @@ class GetUrl:
         else:
             return self.mysql_json(sql)['textures']['SKIN']['url']
 
-    def skins_json_object(self):
-        sql = "\
-            SELECT Skins.Value \
-            FROM Skins \
-            WHERE Skins.nick LIKE %s \
-        "
-        return self.mysql_json(sql)
-
     def premium_uuid(self):
         sql = "\
             SELECT premium.UUID \
