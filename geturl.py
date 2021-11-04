@@ -1,7 +1,10 @@
-from connection import mysql_json, mysql_query
+from connection import mysql_json, mysql_query, redis_conn
 import base64
 import orjson as json
 import cloudscraper
+from walrus import *
+
+db = redis_conn()
 
 class GetUrl:
     def __init__(self, nick):
@@ -48,3 +51,34 @@ class GetUrl:
         url = "https://tlauncher.org/upload/all/nickname/tlauncher_{0}.png".format(
             self.nick)
         return url
+
+class IsIn:
+    def __init__(self, nick):
+        self.nick = nick
+
+    def is_in_db(self):
+        sql = "\
+            SELECT premium.UUID \
+            FROM premium \
+            WHERE premium.Name LIKE %s \
+        "
+        if mysql_query(sql, self.nick) is None:
+            return 'false'
+        else:
+            return 'true'
+
+    def is_in_mojang(self):
+        scraper = cloudscraper.create_scraper()
+        get_info = scraper.get(f'https://mc-heads.net/minecraft/profile/{self.nick}', stream=True)
+        if get_info.status_code == 404 or get_info.status_code == 204:
+            return 'false'
+        else:
+            return 'true'
+    
+    def is_in_tl(self):
+        scraper = cloudscraper.create_scraper()
+        get_info = scraper.get(f'https://tlauncher.org/upload/all/nickname/tlauncher_{self.nick}.png', stream=True)
+        if get_info.status_code == 404 or get_info.status_code == 204:
+            return 'false'
+        else:
+            return 'true'
