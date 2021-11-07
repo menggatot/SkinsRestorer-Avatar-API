@@ -17,9 +17,11 @@ protobuf==3.19.0
 pycodestyle==2.8.0
 pyparsing==3.0.0
 python-dotenv==0.19.1
+redis==3.5.3
 requests==2.26.0
 requests-toolbelt==0.9.1
 toml==0.10.2
 urllib3==1.26.7
+walrus==0.8.2
 Werkzeug==2.0.2
 yarg==0.1.9
