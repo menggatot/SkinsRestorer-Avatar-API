@@ -80,6 +80,8 @@ def get_avatar(nickname, avatar_size):
 def serve_img(nickname, size):
     if size >= 512:
         size = 512
+    if size <= 8:
+        size = 8
     nick_clean = str(nickname).lstrip(r"""!"#$%&'()*+,./:;<=>?@[\]^{|}~""")
     img = get_avatar(nick_clean, size)
     return img
