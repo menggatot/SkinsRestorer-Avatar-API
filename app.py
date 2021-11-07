@@ -12,24 +12,29 @@ app = Flask(__name__)
 
 def cache_it(insert_nickname, method, name):
     if db.get(f'{insert_nickname}_{name}') is None:
-        if method is True:
-            db.delete(f'{insert_nickname}_{name}')
-            db.set(f'{insert_nickname}_{name}', 'True', 300)
-        else:
+        print(name, 'Is False' if method is False else 'Is True')
+
+        if method is False:
             db.delete(f'{insert_nickname}_{name}')
             db.set(f'{insert_nickname}_{name}', 'False', 300)
+        else:
+            db.delete(f'{insert_nickname}_{name}')
+            db.set(f'{insert_nickname}_{name}', 'True', 300)
 
 def get_avatar(insert_nickname, avatar_size):
     nickname = IsIn(insert_nickname)  # Name Input
     nickname_url = GetUrl(insert_nickname)
 
-    cache_it(insert_nickname, nickname.is_in_db, 'is_in_db')
-    cache_it(insert_nickname, nickname.is_in_tl, 'is_in_tl')
-    cache_it(insert_nickname, nickname.is_in_mojang, 'is_in_mojang')
+    cache_it(insert_nickname, nickname.is_in_db(), 'is_in_db')
+    cache_it(insert_nickname, nickname.is_in_tl(), 'is_in_tl')
+    cache_it(insert_nickname, nickname.is_in_mojang(), 'is_in_mojang')
     
     is_in_db = db.get(f'{insert_nickname}_is_in_db').decode("utf-8")
     is_in_mojang = db.get(f'{insert_nickname}_is_in_mojang').decode("utf-8")
     is_in_tl = db.get(f'{insert_nickname}_is_in_tl').decode("utf-8")
+    print('db:', is_in_db, 'mjg:', is_in_mojang, 'tl:', is_in_tl)
+
+    # return classic(nickname_url.mojang_head(), avatar_size)
 
     if is_in_db == 'False':
         print(f'{insert_nickname} didn\'t have custom skin', is_in_db)
@@ -51,9 +56,10 @@ def get_avatar(insert_nickname, avatar_size):
                 return classic(nickname_url.tl_head(), avatar_size)
 
     else:
-        print(f'{insert_nickname} has custom skin',
-              db.get(f'{insert_nickname}_is_in_db'))
+        print(f'{insert_nickname} has custom skin', is_in_db)
         return classic(nickname_url.db_head(), avatar_size)
+
+
 
 @app.route('/<int:size>/<nickname>.png')
 def serve_img(nickname, size):

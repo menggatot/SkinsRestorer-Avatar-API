@@ -58,27 +58,28 @@ class IsIn:
 
     def is_in_db(self):
         sql = "\
-            SELECT premium.UUID \
-            FROM premium \
-            WHERE premium.Name LIKE %s \
+            SELECT Skins.Value \
+            FROM Players \
+            RIGHT JOIN Skins ON Players.Skin = Skins.Nick \
+            WHERE Players.nick LIKE %s \
         "
         if mysql_query(sql, self.nick) is None:
-            return 'false'
+            return False
         else:
-            return 'true'
+            return True
 
     def is_in_mojang(self):
         scraper = cloudscraper.create_scraper()
         get_info = scraper.get(f'https://mc-heads.net/minecraft/profile/{self.nick}', stream=True)
         if get_info.status_code == 404 or get_info.status_code == 204:
-            return 'false'
+            return False
         else:
-            return 'true'
+            return True
     
     def is_in_tl(self):
         scraper = cloudscraper.create_scraper()
         get_info = scraper.get(f'https://tlauncher.org/upload/all/nickname/tlauncher_{self.nick}.png', stream=True)
         if get_info.status_code == 404 or get_info.status_code == 204:
-            return 'false'
+            return False
         else:
-            return 'true'
+            return True
