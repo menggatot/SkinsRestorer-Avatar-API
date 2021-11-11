@@ -2,14 +2,18 @@
 simple python rest API that create Minecraft player avatar from local MySQL DB and TLauncher's website
 # env file example
 ```bash
-MYSQL_HOST="MariaDB"
-MYSQL_PORT="3306"
-MYSQL_USER="root"
-MYSQL_PASSWORD="password"
-MYSQL_DATABASE="db_name"
-REDIS_HOST="redis"
-REDIS_PORT="6379"
-REDIS_DATABASE="0"
+MYSQL_HOST="MariaDB" #no default value, non-optional, str
+MYSQL_PORT=3306 #default value 3306, optional, int
+MYSQL_USER="root" #no default value, non-optional, str
+MYSQL_PASSWORD="password" #no default value, non-optional, str
+MYSQL_DATABASE="db_name" #no default value, non-optional, str
+REDIS_HOST="redis" #no default value, non-optional, str
+REDIS_PORT=6379 #default value 6379, optional, int
+REDIS_DATABASE=0 #default value 0, optional, int
+CACHE_IMAGE_TIME=300 #default value 300, optional, int
+JPEG_QUALITY=80 #default value 80, optional, int
+CACHE_PLAYER_TIME=300 #default value 300, optional, int
+CACHE_PLAYER_URL_TIME=300 #default value 300, optional, int
 ```
 # how to run
 ```bash

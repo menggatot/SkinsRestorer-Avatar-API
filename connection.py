@@ -10,9 +10,9 @@ load_dotenv(os.path.join(BASEDIR, '.env'))
 
 def redis_conn():
     db = Walrus(
-        host=os.getenv("REDIS_HOST"),
-        port=os.getenv("REDIS_PORT"),
-        db=os.getenv("REDIS_DATABASE"),
+        host=os.getenv("REDIS_HOST", "localhost"),
+        port=os.getenv("REDIS_PORT", 6379),
+        db=os.getenv("REDIS_DATABASE", 0),
         )
     return db
 
@@ -23,7 +23,7 @@ def redis_cache():
 def mysql_conn():
     conn = MySQLdb.connect(
         host=os.getenv("MYSQL_HOST"),
-        port=int(os.getenv("MYSQL_PORT")),
+        port=int(os.getenv("MYSQL_PORT", 3306)),
         user=os.getenv("MYSQL_USER"),
         passwd=os.getenv("MYSQL_PASSWORD"),
         db=os.getenv("MYSQL_DATABASE"),
