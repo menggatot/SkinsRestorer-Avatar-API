@@ -90,8 +90,6 @@ def get_avatar(nickname, avatar_size):
 @app.route('/<nickname>.png', strict_slashes=False)
 @app.route('/<nickname>.png/<int:size>', strict_slashes=False)
 @app.route('/<nickname>.png/<int:size>.png', strict_slashes=False)
-@app.route('/<int:size>/<nickname>', strict_slashes=False)
-@app.route('/<int:size>/<nickname>.png', strict_slashes=False)
 def server_classic_png(nickname="null", size=230):
     if size >= 512:
         size = 512
@@ -104,7 +102,6 @@ def server_classic_png(nickname="null", size=230):
 @app.route('/<nickname>.jpg', strict_slashes=False)
 @app.route('/<nickname>.jpg/<int:size>', strict_slashes=False)
 @app.route('/<nickname>.jpg/<int:size>.jpg', strict_slashes=False)
-@app.route('/<int:size>/<nickname>.jpg', strict_slashes=False)
 def serve_classic_jpeg(nickname="null", size=230):
     if size >= 512:
         size = 512
